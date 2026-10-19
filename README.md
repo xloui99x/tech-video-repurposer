@@ -1,73 +1,103 @@
-# React + TypeScript + Vite
+# Video Highlight Exporter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/xloui99x/tech-video-repurposer/actions/workflows/ci.yml/badge.svg)](https://github.com/xloui99x/tech-video-repurposer/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+Turn a long video (a talk, webinar or interview) into short, platform-ready
+clips. Watch, mark the strong moments, note why they matter, and export each
+one as Full HD, 4K, LinkedIn square or 9:16 Reels/TikTok. **Everything runs in
+the browser**: the video is never uploaded anywhere.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Live demo:** https://xloui99x.github.io/tech-video-repurposer/
 
-## React Compiler
+![Screenshot](docs/screenshot.png)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Why
 
-## Expanding the ESLint configuration
+Repurposing long recordings usually means scrubbing through an hour of
+footage, writing down timestamps, then cutting and resizing every clip by hand
+in an editor. This tool collapses that into one screen for creators and media
+teams: mark while watching, export when done.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Features
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Mark a highlight with a button or by pressing **M** in the player
+- Notes per highlight, shown as a caption in the preview
+- Adjustable clip length (3–60 s), automatically shortened at the end of the video
+- Highlights stay sorted on a timeline; select, replay or remove them
+- Preview in the exact target aspect ratio, so you see the crop before exporting
+- Export to H.264/AAC MP4 with live progress
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## How it works
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+<video> ──mark──▶ highlightsReducer ──▶ HighlightList / ExportPanel
+                         │
+                  Export │ buildClipArgs(start, duration, format)
+                         ▼
+             FFmpeg.wasm (Web Worker, in the browser) ──▶ clip-01-1080x1920.mp4
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **FFmpeg compiled to WebAssembly** does the cutting and re-encoding in a Web
+  Worker, so the UI stays responsive. The ~30 MB engine is bundled with the
+  app (no CDN at runtime) and loaded only on the first export.
+- Every format is a fixed frame: the video is **scaled to cover and
+  center-cropped** (`scale=…:force_original_aspect_ratio=increase,crop=…`),
+  so a 16:9 recording becomes a clean 9:16 clip without black bars.
+- The single-threaded core needs no cross-origin isolation, which is why it
+  runs on plain static hosting such as GitHub Pages.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Code structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── domain/         pure TypeScript, no React, fully unit-tested
+│   ├── highlights.ts      state transitions (reducer) and invariants
+│   ├── ffmpegCommand.ts   builds the FFmpeg arguments and file names
+│   ├── formats.ts         export formats
+│   └── time.ts            time formatting
+├── hooks/
+│   ├── useClipExporter.ts lazy FFmpeg loading, progress, cleanup
+│   └── useVideoSource.ts  selected file and its object URL lifecycle
+├── components/     SourceVideo, HighlightList, ExportPanel
+└── App.tsx         wires state, hooks and components together
+```
+
+Design decisions:
+
+- **Business logic outside React.** The reducer and the FFmpeg command builder
+  are plain functions, which makes them easy to test and to reason about.
+- **Explicit status type.** Export progress is a discriminated union
+  (`idle | loading-engine | rendering | done | error`) instead of loose strings,
+  so the UI cannot show an impossible state.
+- **Memory hygiene.** Videos can be hundreds of megabytes: object URLs are
+  revoked when replaced, and FFmpeg's in-memory files are deleted after
+  each export.
+- **Accessible by default.** Real buttons and labels, `aria-pressed` for the
+  selected clip, a live region for export progress, visible focus, dark mode
+  and reduced-motion support.
+
+## Development
+
+Requires Node.js 22.22 or later.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # unit and component tests (Vitest, Testing Library)
+npm run lint       # ESLint with strict type-aware rules
+npm run build      # type check and production build
+```
+
+CI runs formatting, lint, tests and the build on every push; pushes to `main`
+deploy to GitHub Pages.
+
+## Limitations
+
+- Encoding runs on one CPU thread in WebAssembly: a 15-second 1080×1920 clip
+  takes noticeably longer than a native editor. Short clips and the
+  `ultrafast` preset keep it practical.
+- Very large source files are limited by the browser's memory.
+
+## Stack
+
+React 19 · TypeScript (strict) · Vite · FFmpeg.wasm · Vitest · Testing Library · ESLint · Prettier · GitHub Actions

@@ -1,0 +1,377 @@
+:root {
+  --bg: #f4f4f5;
+  --surface: #ffffff;
+  --surface-muted: #f9fafb;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #d1d5db;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --on-accent: #ffffff;
+  --success: #15803d;
+  --danger: #b91c1c;
+  --radius: 16px;
+  --shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+
+  color-scheme: light dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface-muted: #1f2937;
+    --text: #f3f4f6;
+    --muted: #9ca3af;
+    --border: #374151;
+    --accent: #60a5fa;
+    --accent-soft: #172554;
+    --on-accent: #0b1120;
+    --success: #4ade80;
+    --danger: #f87171;
+    --shadow: none;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Layout */
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+.hero {
+  margin-bottom: 32px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 12px;
+}
+
+.hero p {
+  max-width: 70ch;
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.hero .eyebrow {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 24px;
+  align-items: start;
+}
+
+.column {
+  display: grid;
+  gap: 24px;
+}
+
+.export {
+  position: sticky;
+  top: 16px;
+}
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .export {
+    position: static;
+  }
+}
+
+/* Cards and typography */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 8px);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+}
+
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.muted,
+.hint {
+  color: var(--muted);
+  margin: 0;
+}
+
+.hint {
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+kbd {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 0.8em;
+}
+
+/* Form controls */
+
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+textarea,
+input[type='number'],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.file-input {
+  margin: 0;
+  padding: 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+}
+
+.file-input:hover,
+.file-input:focus-within {
+  border-color: var(--accent);
+}
+
+.file-input input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.button {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--text);
+  color: var(--surface);
+}
+
+.button.primary {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button.small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.button.ghost {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Source video */
+
+.source-video {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  border-radius: var(--radius);
+  background: #000;
+}
+
+/* Highlights */
+
+.highlight-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.highlight {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--surface-muted);
+}
+
+.highlight.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.highlight-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.highlight-title {
+  all: unset;
+  cursor: pointer;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlight-title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.highlight-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Export preview */
+
+.preview {
+  --max-preview-height: 520px;
+  position: relative;
+  /* Width follows the target ratio but never exceeds the panel or the max height. */
+  width: min(100%, calc(var(--max-preview-height) * var(--ratio, 1.78)));
+  margin: 20px auto 0;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 8px);
+  background: #020617;
+  transition: aspect-ratio 0.2s ease;
+}
+
+.preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-empty {
+  height: 100%;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+}
+
+.preview-caption {
+  position: absolute;
+  inset: auto 16px 16px;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 0.68);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.preview-caption span {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+/* Status */
+
+.status {
+  margin-top: 12px;
+  min-height: 1.5em;
+}
+
+.status p {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.status progress {
+  width: 100%;
+}
+
+.status .success {
+  color: var(--success);
+}
+
+.status .error {
+  color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
